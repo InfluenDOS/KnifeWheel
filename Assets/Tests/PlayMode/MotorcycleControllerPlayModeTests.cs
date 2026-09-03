@@ -90,10 +90,15 @@ namespace KnifeWheel.Tests.PlayMode
             var controller = FindController();
             var scripted = new ScriptedVehicleInputSource();
             controller.SetInputSource(scripted);
+            controller.enabled = false;
 
-            scripted.Current = new VehicleControlInput(1f, 0f, 0f);
+            const float dt = 0.02f;
+            var throttle = new VehicleControlInput(1f, 0f, 0f);
             for (int i = 0; i < 30; i++)
+            {
+                controller.ApplyControl(in throttle, dt);
                 yield return new WaitForFixedUpdate();
+            }
 
             float forwardSpeed = MotorcycleDriveModel.GetForwardSpeed(
                 controller.Body.velocity,
@@ -101,15 +106,16 @@ namespace KnifeWheel.Tests.PlayMode
             Assert.Greater(forwardSpeed, controller.Settings.MinSpeedForSteer);
 
             float yawBefore = controller.transform.eulerAngles.y;
-
-            scripted.Current = new VehicleControlInput(1f, 0f, 1f);
+            var steerInput = new VehicleControlInput(1f, 0f, 1f);
             float maxYawRate = 0f;
             for (int i = 0; i < 40; i++)
             {
-                yield return new WaitForFixedUpdate();
+                controller.ApplyControl(in steerInput, dt);
+                Physics.SyncTransforms();
                 maxYawRate = Mathf.Max(
                     maxYawRate,
-                    Vector3.Dot(controller.Body.angularVelocity, Vector3.up));
+                    Vector3.Dot(controller.Body.angularVelocity, controller.transform.up));
+                yield return new WaitForFixedUpdate();
             }
 
             Assert.Greater(maxYawRate, 0.05f, "Expected positive yaw rate while steering at speed.");

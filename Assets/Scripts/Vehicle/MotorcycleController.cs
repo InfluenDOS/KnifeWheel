@@ -58,6 +58,7 @@ namespace KnifeWheel.Vehicle
             _rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
             _rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             _rigidbody.constraints = RigidbodyConstraints.None;
+            _rigidbody.WakeUp();
 
             if (_inputSource == null && useLegacyInput)
                 _inputSource = new LegacyVehicleInputSource();
