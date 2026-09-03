@@ -71,7 +71,7 @@ jobs:
         uses: game-ci/unity-test-runner@v4
         with:
           projectPath: .
-          unityVersion: auto
+          unityVersion: 2022.3.62f3
           testMode: ${{ matrix.testMode }}
           artifactsPath: test-results/${{ matrix.testMode }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
