@@ -65,13 +65,15 @@ jobs:
             Library-${{ runner.os }}-${{ matrix.testMode }}-
             Library-${{ runner.os }}-
 
+      # Local ProjectVersion is China Hub 2022.3.62f3c1. GameCI has no c1 images,
+      # so CI pins the matching official international LTS build 2022.3.62f3.
       - name: Run Unity ${{ matrix.testMode }} tests
         if: ${{ env.UNITY_LICENSE != '' && env.UNITY_EMAIL != '' && env.UNITY_PASSWORD != '' }}
         id: unity-tests
         uses: game-ci/unity-test-runner@v4
         with:
           projectPath: .
-          unityVersion: auto
+          unityVersion: 2022.3.62f3
           testMode: ${{ matrix.testMode }}
           artifactsPath: test-results/${{ matrix.testMode }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
