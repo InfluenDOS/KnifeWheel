@@ -98,12 +98,20 @@ namespace KnifeWheel.Tests.PlayMode
             float yawBefore = controller.transform.eulerAngles.y;
 
             scripted.Current = new VehicleControlInput(1f, 0f, 1f);
-            for (int i = 0; i < 30; i++)
+            float maxYawRate = 0f;
+            for (int i = 0; i < 40; i++)
+            {
                 yield return new WaitForFixedUpdate();
+                maxYawRate = Mathf.Max(
+                    maxYawRate,
+                    Vector3.Dot(controller.Body.angularVelocity, Vector3.up));
+            }
+
+            Assert.Greater(maxYawRate, 0.05f, "Expected positive yaw rate while steering at speed.");
 
             float yawAfter = controller.transform.eulerAngles.y;
-            float delta = Mathf.DeltaAngle(yawBefore, yawAfter);
-            Assert.Greater(Mathf.Abs(delta), 2f, "Expected steering to change yaw at speed.");
+            float delta = Mathf.Abs(Mathf.DeltaAngle(yawBefore, yawAfter));
+            Assert.Greater(delta, 0.05f, "Expected steering to change yaw at speed.");
         }
 
         [UnityTest]

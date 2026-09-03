@@ -107,10 +107,13 @@ namespace KnifeWheel.Vehicle
             // Acceleration mode keeps arcade steer predictable regardless of inertia tensor.
             _rigidbody.AddTorque(transform.up * yawAccel, ForceMode.Acceleration);
 
-            // Soft-clamp yaw rate after applying torque intent.
-            Vector3 localAngular = transform.InverseTransformDirection(_rigidbody.angularVelocity);
-            localAngular.y = MotorcycleDriveModel.ClampYawRate(localAngular.y, settings);
-            _rigidbody.angularVelocity = transform.TransformDirection(localAngular);
+            float yawRate = Vector3.Dot(_rigidbody.angularVelocity, transform.up);
+            if (Mathf.Abs(yawRate) > settings.MaxSteerYawRate)
+            {
+                Vector3 clamped = _rigidbody.angularVelocity - transform.up * yawRate;
+                clamped += transform.up * MotorcycleDriveModel.ClampYawRate(yawRate, settings);
+                _rigidbody.angularVelocity = clamped;
+            }
 
             Vector3 stability = MotorcycleDriveModel.ComputeStabilityTorque(transform.up, settings);
             _rigidbody.AddTorque(stability, ForceMode.Acceleration);

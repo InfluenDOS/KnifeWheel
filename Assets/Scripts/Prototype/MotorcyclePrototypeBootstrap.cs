@@ -52,6 +52,7 @@ namespace KnifeWheel.Prototype
                 {
                     color = new Color(0.35f, 0.38f, 0.32f)
                 };
+            ApplyPrototypePhysicsMaterial(ground.GetComponent<Collider>());
             return ground;
         }
 
@@ -85,6 +86,7 @@ namespace KnifeWheel.Prototype
             var collider = root.AddComponent<BoxCollider>();
             collider.center = new Vector3(0f, 0.1f, 0f);
             collider.size = new Vector3(0.5f, 0.9f, 1.8f);
+            ApplyPrototypePhysicsMaterial(collider);
 
             var rb = root.AddComponent<Rigidbody>();
             rb.mass = 180f;
@@ -149,6 +151,26 @@ namespace KnifeWheel.Prototype
             wheel.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
             wheel.transform.localScale = new Vector3(0.55f, 0.08f, 0.55f);
             Object.DestroyImmediate(wheel.GetComponent<Collider>());
+        }
+
+        private static void ApplyPrototypePhysicsMaterial(Collider collider)
+        {
+            if (collider == null)
+                return;
+
+            collider.material = GetPrototypePhysicsMaterial();
+        }
+
+        private static PhysicMaterial GetPrototypePhysicsMaterial()
+        {
+            return new PhysicMaterial("PrototypeVehicleSurface")
+            {
+                dynamicFriction = 0.15f,
+                staticFriction = 0.15f,
+                frictionCombine = PhysicMaterialCombine.Minimum,
+                bounciness = 0f,
+                bounceCombine = PhysicMaterialCombine.Minimum
+            };
         }
     }
 }
