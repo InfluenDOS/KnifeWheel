@@ -1,0 +1,14 @@
+{
+  "name": "KnifeWheel.Runtime",
+  "rootNamespace": "KnifeWheel",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
