@@ -136,7 +136,7 @@ namespace KnifeWheel.Tests.EditMode
             Vector3 torque = MotorcycleDriveModel.ComputeStabilityTorque(leaned, _settings);
             Assert.Greater(torque.magnitude, 0f);
             // Cross(leaned, up) points roughly around +Z for lean to +X; assist should be non-zero on that axis.
-            Assert.AreNotEqual(0f, torque.z, 0.0001f);
+            Assert.That(Mathf.Abs(torque.z), Is.GreaterThan(0.0001f));
         }
 
         [Test]
