@@ -104,15 +104,27 @@ namespace KnifeWheel.Vehicle
             _rigidbody.AddForce(driveForce, ForceMode.Force);
 
             float yawAccel = MotorcycleDriveModel.ComputeYawAcceleration(forwardSpeed, in input, settings);
-            // Acceleration mode keeps arcade steer predictable regardless of inertia tensor.
-            _rigidbody.AddTorque(transform.up * yawAccel, ForceMode.Acceleration);
-
-            float yawRate = Vector3.Dot(_rigidbody.angularVelocity, transform.up);
-            if (Mathf.Abs(yawRate) > settings.MaxSteerYawRate)
+            if (Mathf.Abs(yawAccel) > MotorcycleDriveModel.SpeedEpsilon)
             {
-                Vector3 clamped = _rigidbody.angularVelocity - transform.up * yawRate;
-                clamped += transform.up * MotorcycleDriveModel.ClampYawRate(yawRate, settings);
-                _rigidbody.angularVelocity = clamped;
+                // Integrate yaw on the physics timestep so steering stays responsive on flat colliders.
+                float yawRate = Vector3.Dot(_rigidbody.angularVelocity, transform.up);
+                yawRate += yawAccel * deltaTime;
+                yawRate = MotorcycleDriveModel.ClampYawRate(yawRate, settings);
+
+                Vector3 worldAngular = _rigidbody.angularVelocity;
+                worldAngular -= transform.up * Vector3.Dot(worldAngular, transform.up);
+                worldAngular += transform.up * yawRate;
+                _rigidbody.angularVelocity = worldAngular;
+            }
+            else
+            {
+                float yawRate = Vector3.Dot(_rigidbody.angularVelocity, transform.up);
+                if (Mathf.Abs(yawRate) > settings.MaxSteerYawRate)
+                {
+                    Vector3 clamped = _rigidbody.angularVelocity - transform.up * yawRate;
+                    clamped += transform.up * MotorcycleDriveModel.ClampYawRate(yawRate, settings);
+                    _rigidbody.angularVelocity = clamped;
+                }
             }
 
             Vector3 stability = MotorcycleDriveModel.ComputeStabilityTorque(transform.up, settings);
