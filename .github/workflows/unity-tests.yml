@@ -1,0 +1,86 @@
+name: Unity Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  smoke:
+    name: Fast Smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run fast drive-model smoke checks when available
+        shell: bash
+        run: |
+          if [ -f Tools/verify_motorcycle_drive_model.py ]; then
+            python3 Tools/verify_motorcycle_drive_model.py
+          else
+            echo "No fast smoke script in this revision; skipping."
+          fi
+
+  unity-tests:
+    name: Unity ${{ matrix.testMode }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        testMode:
+          - editmode
+          - playmode
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Unity CI not configured yet
+        if: ${{ env.UNITY_LICENSE == '' || env.UNITY_EMAIL == '' || env.UNITY_PASSWORD == '' }}
+        shell: bash
+        run: |
+          echo "::notice title=Unity CI inactive::Add UNITY_LICENSE, UNITY_EMAIL, and UNITY_PASSWORD repository secrets to enable real Unity ${{ matrix.testMode }} tests."
+          echo "Unity tests were NOT executed in this run."
+
+      - name: Cache Unity Library
+        if: ${{ env.UNITY_LICENSE != '' && env.UNITY_EMAIL != '' && env.UNITY_PASSWORD != '' }}
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ runner.os }}-${{ matrix.testMode }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-${{ runner.os }}-${{ matrix.testMode }}-
+            Library-${{ runner.os }}-
+
+      - name: Run Unity ${{ matrix.testMode }} tests
+        if: ${{ env.UNITY_LICENSE != '' && env.UNITY_EMAIL != '' && env.UNITY_PASSWORD != '' }}
+        id: unity-tests
+        uses: game-ci/unity-test-runner@v4
+        with:
+          projectPath: .
+          unityVersion: auto
+          testMode: ${{ matrix.testMode }}
+          artifactsPath: test-results/${{ matrix.testMode }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Unity ${{ matrix.testMode }} Test Results
+
+      - name: Upload Unity test artifacts
+        if: ${{ always() && env.UNITY_LICENSE != '' && env.UNITY_EMAIL != '' && env.UNITY_PASSWORD != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-${{ matrix.testMode }}-results
+          path: ${{ steps.unity-tests.outputs.artifactsPath }}
+          if-no-files-found: warn
