@@ -4,7 +4,7 @@ KnifeWheel is a small 3D Unity game and an AI-assisted game-development workflow
 
 ## Project setup
 
-- **Unity**: 2022.3.52f1 (2022.3 LTS) — local, tests, and GitHub CI use this version
+- **Unity**: 2022.3.62f3 (2022.3 LTS) — local, tests, and GitHub CI use this version
 - **Render pipeline**: Built-in
 - **Input**: Legacy Input Manager (`activeInputHandler: 0`)
 - **Playable scene**: `Assets/Scenes/MotorcyclePrototype.unity`
