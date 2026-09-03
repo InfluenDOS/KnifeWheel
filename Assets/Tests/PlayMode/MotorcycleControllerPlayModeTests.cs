@@ -92,8 +92,13 @@ namespace KnifeWheel.Tests.PlayMode
             controller.SetInputSource(scripted);
 
             scripted.Current = new VehicleControlInput(1f, 0f, 0f);
-            for (int i = 0; i < 25; i++)
+            for (int i = 0; i < 30; i++)
                 yield return new WaitForFixedUpdate();
+
+            float forwardSpeed = MotorcycleDriveModel.GetForwardSpeed(
+                controller.Body.velocity,
+                controller.transform.forward);
+            Assert.Greater(forwardSpeed, controller.Settings.MinSpeedForSteer);
 
             float yawBefore = controller.transform.eulerAngles.y;
 
